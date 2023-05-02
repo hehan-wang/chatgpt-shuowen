@@ -15,6 +15,8 @@ import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
 import { useChat } from './hooks/useChat'
 import { useCopyCode } from './hooks/useCopyCode'
+import { order } from './hooks/order'
+import { product } from './hooks/product'
 import { useUsingContext } from './hooks/useUsingContext'
 import HeaderComponent from './components/Header/index.vue'
 import { HoverButton, SvgIcon } from '@/components/index'
@@ -32,7 +34,12 @@ const ms = useMessage()
 const chatStore = useChatStore()
 
 useCopyCode()
-
+// order
+const { currentPlanName, getCurrentPlanName } = order()
+getCurrentPlanName()
+// product
+const { allProduct, getAllProduct } = product()
+getAllProduct()
 const { isMobile } = useBasicLayout()
 const { addChat, updateChat, updateChatSome, getChatByUuidAndIndex } = useChat()
 const { scrollRef, scrollToBottom, scrollToBottomIfAtBottom } = useScroll()
@@ -58,6 +65,7 @@ dataSources.value.forEach((item, index) => {
   if (item.loading)
     updateChatSome(+uuid, index, { loading: false })
 })
+
 /**
  * @description: 提交对话框中的内容
  * @return {*}
@@ -65,6 +73,7 @@ dataSources.value.forEach((item, index) => {
 function handleSubmit() {
   onConversation()
 }
+
 /**
  * @description: 生成这句对话
  * @return {*}
@@ -208,6 +217,7 @@ async function onConversation() {
     loading.value = false
   }
 }
+
 /**
  * @description: 再次生成这句对话
  * @param {*} index
@@ -383,6 +393,37 @@ function handleDelete(index: number) {
   })
 }
 
+function handleCurrentPlan() {
+  dialog.info({
+    title: '当前套餐',
+    content: '这里显示当前套餐的详细信息。',
+  })
+}
+
+function handlePurchase() {
+  const productHtml = allProduct.value
+    .map(
+      product => `
+            <div class="product-item">
+              <h3>${product.name}</h3>
+              <p>${product.price} ${product.currency}</p>
+            </div>
+          `,
+    )
+    .join('')
+
+  const content = `
+        <div class="grid-container">
+          ${productHtml}
+        </div>
+      `
+
+  dialog.info({
+    title: '购买兑换',
+    content,
+  })
+}
+
 /**
  * @description: 清除聊天记录
  * @return {*}
@@ -401,6 +442,7 @@ function handleClear() {
     },
   })
 }
+
 /**
  * @description: 提交对话框中的内容
  * @return {*}
@@ -419,6 +461,7 @@ function handleEnter(event: KeyboardEvent) {
     }
   }
 }
+
 /**
  * @description: 停止生成回答
  * @return {*}
@@ -541,47 +584,90 @@ onUnmounted(() => {
       </div>
     </main>
     <footer :class="footerClass">
-      <div class="w-full max-w-screen-xl m-auto">
-        <div class="flex items-center justify-between space-x-2">
-          <HoverButton tooltip="删除记录" @click="handleClear">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:delete-bin-line" />
-            </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" tooltip="保存会话到图片" @click="handleExport">
-            <span class="text-xl text-[#4f555e] dark:text-white">
-              <SvgIcon icon="ri:download-2-line" />
-            </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" tooltip="切换聊天模式" @click="toggleUsingContext">
-            <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
-              <SvgIcon icon="ri:chat-history-line" />
-            </span>
-          </HoverButton>
-          <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
-            <template #default="{ handleInput, handleBlur, handleFocus }">
-              <NInput
-                ref="inputRef"
-                v-model:value="prompt"
-                type="textarea"
-                :placeholder="placeholder"
-                :autosize="{ minRows: 1, maxRows: isMobile ? 4 : 8 }"
-                @input="handleInput"
-                @focus="handleFocus"
-                @blur="handleBlur"
-                @keypress="handleEnter"
-              />
-            </template>
-          </NAutoComplete>
-          <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
-            <template #icon>
-              <span class="dark:text-black">
-                <SvgIcon icon="ri:send-plane-fill" />
+			<div class="w-full max-w-screen-xl m-auto">
+        <div class="flex flex-col">
+          <div class="flex items-center mb-2 space-x-2">
+            <HoverButton tooltip="当前套餐" @click="handleCurrentPlan">
+              <span class="text-xl custom-blue">
+                <SvgIcon icon="ri:gift-line" />
               </span>
-            </template>
-          </NButton>
+            </HoverButton>
+            <span>{{ currentPlanName }}</span>
+            <HoverButton tooltip="购买兑换" @click="handlePurchase">
+              <span class="text-xl custom-green">
+                <SvgIcon icon="ri:shopping-cart-line" />
+              </span>
+            </HoverButton>
+            <span>购买兑换</span>
+          </div>
+          <div class="flex items-center justify-between space-x-2">
+            <HoverButton tooltip="删除记录" @click="handleClear">
+              <span class="text-xl text-[#4f555e] dark:text-white">
+                <SvgIcon icon="ri:delete-bin-line" />
+              </span>
+            </HoverButton>
+            <HoverButton v-if="!isMobile" tooltip="保存会话到图片" @click="handleExport">
+              <span class="text-xl text-[#4f555e] dark:text-white">
+                <SvgIcon icon="ri:download-2-line" />
+              </span>
+            </HoverButton>
+            <HoverButton v-if="!isMobile" tooltip="切换聊天模式" @click="toggleUsingContext">
+              <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
+                <SvgIcon icon="ri:chat-history-line" />
+              </span>
+            </HoverButton>
+            <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
+              <template #default="{ handleInput, handleBlur, handleFocus }">
+                <NInput
+                  ref="inputRef"
+                  v-model:value="prompt"
+                  type="textarea"
+                  :placeholder="placeholder"
+                  :autosize="{ minRows: 1, maxRows: isMobile ? 4 : 8 }"
+                  @input="handleInput"
+                  @focus="handleFocus"
+                  @blur="handleBlur"
+                  @keypress="handleEnter"
+                />
+              </template>
+            </NAutoComplete>
+            <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
+              <template #icon>
+                <span class="dark:text-black">
+                  <SvgIcon icon="ri:send-plane-fill" />
+                </span>
+              </template>
+            </NButton>
+          </div>
         </div>
       </div>
     </footer>
   </div>
 </template>
+
+<style>
+.custom-blue {
+	color: #007BFF;
+}
+
+.custom-green {
+	color: #28A745;
+}
+
+.product-modal {
+	/* ...其他样式，如背景、位置等... */
+}
+
+.grid-container {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 1rem;
+}
+
+.product-item {
+	background-color: #f0f0f0;
+	padding: 1rem;
+	border-radius: 5px;
+	/* ...其他样式... */
+}
+</style>

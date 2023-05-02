@@ -105,6 +105,18 @@ function handlePress(event: KeyboardEvent) {
     handleVerify()
   }
 }
+// 微信登录方法
+function wechatLogin() {
+	const appid = "wx9ac854d75e684027"; // 替换为你的 AppID
+	const redirect_uri = encodeURIComponent("http://127.0.0.1:3002/callback/wx"); // 替换为你的回调 URL，并进行URL编码
+	const state = "test"; // 可自定义，用于防止 CSRF 攻击
+	// const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${redirect_uri}&response_type=code&scope=snsapi_userinfo&state=${state}#wechat_redirect`;
+	// const url = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${appid}&redirect_uri=${redirect_uri}&response_type=code&scope=snsapi_login&state=${state}#wechat_redirect`;
+
+	// const url = `https://open.weixin.qq.com/connect/qrconnect?appid=${appid}&redirect_uri=${redirect_uri}&response_type=code&scope=snsapi_login&state=${state}#wechat_redirect`;
+	const url = `https://open.weixin.qq.com/connect/qrconnect?appid=${appid}&redirect_uri=${redirect_uri}&response_type=code&scope=snsapi_login&state=${state}#wechat_redirect`;
+	window.location.href = url;
+}
 </script>
 
 <template>
@@ -124,4 +136,41 @@ function handlePress(event: KeyboardEvent) {
   >
     {{ $t('common.verify') }}
   </NButton>
+	<div class="wechat-login-wrapper">
+		<button class="wechat-login-btn" @click="wechatLogin">
+			<img src="@/assets/wechat.png" alt="微信" />
+		</button>
+	</div>
 </template>
+
+<style scoped>
+.wechat-login-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	/*background-color: #1aad19;*/
+	border: none;
+	border-radius: 50%;
+	width: 48px;
+	height: 48px;
+	cursor: pointer;
+	outline: none;
+	transition: background-color 0.2s ease;
+}
+
+.wechat-login-wrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100%; /* 您可以根据需要调整高度 */
+}
+
+.wechat-login-btn:hover {
+	background-color: #179b16;
+}
+
+/*.wechat-login-btn img {*/
+/*	width: 48px;*/
+/*	height: 48px;*/
+/*}*/
+</style>

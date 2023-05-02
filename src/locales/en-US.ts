@@ -30,7 +30,7 @@ export default {
     wrong: 'Something went wrong, please try again later.',
     success: 'Success',
     failed: 'Failed',
-    verify: 'Verify',
+    verify: 'Login',
     unauthorizedTips: 'Unauthorized, please login.',
     email: 'Email',
     passWord: 'PassWord',
